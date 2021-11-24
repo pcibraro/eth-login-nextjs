@@ -11,11 +11,14 @@ import { convertUtf8ToHex } from "@walletconnect/utils";
 
 export default function WalletConnectLogin(props) {
   const [requestId, setRequestId] = useState(1);
+  const [wc, setwc] = useState();
 
   const connect = async () => {
     
+    connector = wc;
+
     if(connector) {
-      return signMessage(connector);
+      //return signMessage(connector);
     }
     
     // bridge url
@@ -32,10 +35,25 @@ export default function WalletConnectLogin(props) {
 
     // subscribe to events
     await subscribeToEvents(connector);
+
+    setwc(connector);
   };
 
+  const signData = async () => {
+    const { chainId, accounts } = wc;
+    const address = accounts[0];
+
+    const hexMsg = convertUtf8ToHex('hello world');
+
+    // eth_sign params
+    const msgParams = [hexMsg, address];
+
+    // send message
+    const signature = await wc.signPersonalMessage(msgParams);
+  }
+
   const onConnect = async (connector, payload) => {
-    signMessage(connector);
+    //signMessage(connector);
   };
 
   const subscribeToEvents = (connector) => {
@@ -58,7 +76,7 @@ export default function WalletConnectLogin(props) {
       const { chainId, accounts } = connector;
       const address = accounts[0];
       
-      signMessage(connector);
+      //signMessage(connector);
     }
 
   };
@@ -109,6 +127,8 @@ export default function WalletConnectLogin(props) {
       <div>
 
         {!props.session && <button onClick={connect} className={styles.button}><img src="/walletconnect.png" className={styles.buttonImage}></img>Login with WalletConnect</button>}
+
+        <button onClick={signData} className={styles.button}><img src="/walletconnect.png" className={styles.buttonImage}></img>Sign data with WalletConnect</button>
 
       </div>
   )
