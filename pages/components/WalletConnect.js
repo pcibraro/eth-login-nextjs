@@ -15,26 +15,29 @@ export default function WalletConnectLogin(props) {
 
   const connect = async () => {
     
-    connector = wc;
-
-    console.log(connector);
-
+    const connector = wc;
+        
     if(connector) {
-      await signData();
-      //return signMessage(connector);
+      console.log(`connector session ${connector.connected}`);
+      // check if already connected
+      if (connector.connected) {
+        console.log('trying to sign data');
+        await signData(connector);
+
+        return;
+      }
     }
     
     // bridge url
     const bridge = "https://bridge.walletconnect.org";
 
     // create new connector
-    const connector = new WalletConnect({ bridge, qrcodeModal: QRCodeModal });
+    connector = new WalletConnect({ bridge, qrcodeModal: QRCodeModal });
     
-    // check if already connected
-    if (!connector.connected) {
-      // create new session
-      await connector.createSession();
-    }
+    console.log(`creating session on Connect`);
+        
+    // create new session
+    await connector.createSession();
 
     // subscribe to events
     await subscribeToEvents(connector);
@@ -42,28 +45,38 @@ export default function WalletConnectLogin(props) {
     setwc(connector);
   };
 
-  const signData = async () => {
-    const { chainId, accounts } = wc;
+  const signData = async (connector) => {
+    
+    const { chainId, accounts } = connector;
     const address = accounts[0];
 
-    console.log(address);
+    console.log(`address ${address}`);
 
     const hexMsg = convertUtf8ToHex('hello world');
 
     // eth_sign params
     const msgParams = [hexMsg, address];
 
+    console.log('sending sign');
+
     // send message
-    const signature = await wc.signPersonalMessage(msgParams);
+    const signature = await connector.signPersonalMessage(msgParams);
   }
 
   const onConnect = async (connector, payload) => {
     //signMessage(connector);
 
-    await signData();
+    console.log(`On Connect. Signing data.`);
+    console.log('connector instance');
+    console.log(connector);
+
+    await signData(connector);
   };
 
   const subscribeToEvents = (connector) => {
+    console.log('subscribing to events');
+
+
     if (!connector) {
       return;
     }
@@ -85,20 +98,22 @@ export default function WalletConnectLogin(props) {
         throw error;
       }
 
-      const { chainId, accounts } = payload.params[0];
+      //const { chainId, accounts } = payload.params[0];
       
-      await signData();
+      //await signData();
 
     });
 
 
-    /*if (connector.connected) {
+    if (connector.connected) {
       
       const { chainId, accounts } = connector;
       const address = accounts[0];
       
+      console.log('events subscribed. Connection open');
+      
       //signMessage(connector);
-    }*/
+    }
 
   };
 
@@ -149,7 +164,7 @@ export default function WalletConnectLogin(props) {
 
         {!props.session && <button onClick={connect} className={styles.button}><img src="/walletconnect.png" className={styles.buttonImage}></img>Login with WalletConnect</button>}
 
-        <button onClick={signData} className={styles.button}><img src="/walletconnect.png" className={styles.buttonImage}></img>Sign data with WalletConnect</button>
+      
 
       </div>
   )
