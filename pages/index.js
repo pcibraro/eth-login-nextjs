@@ -9,6 +9,8 @@ import WalletConnectLogin from './components/WalletConnect';
 import { signIn, signOut, useSession } from 'next-auth/client'
 
 export default function Home({infura}) {
+
+  //infura
   const [session] = useSession();
 
   
