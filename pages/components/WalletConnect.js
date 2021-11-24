@@ -17,7 +17,10 @@ export default function WalletConnectLogin(props) {
     
     connector = wc;
 
+    console.log(connector);
+
     if(connector) {
+      await signData();
       //return signMessage(connector);
     }
     
@@ -43,6 +46,8 @@ export default function WalletConnectLogin(props) {
     const { chainId, accounts } = wc;
     const address = accounts[0];
 
+    console.log(address);
+
     const hexMsg = convertUtf8ToHex('hello world');
 
     // eth_sign params
@@ -54,6 +59,8 @@ export default function WalletConnectLogin(props) {
 
   const onConnect = async (connector, payload) => {
     //signMessage(connector);
+
+    await signData();
   };
 
   const subscribeToEvents = (connector) => {
@@ -71,13 +78,27 @@ export default function WalletConnectLogin(props) {
       onConnect(connector, payload);
     });
 
-    if (connector.connected) {
+    connector.on("session_update", async (error, payload) => {
+      console.log(`connector.on("session_update")`);
+
+      if (error) {
+        throw error;
+      }
+
+      const { chainId, accounts } = payload.params[0];
+      
+      await signData();
+
+    });
+
+
+    /*if (connector.connected) {
       
       const { chainId, accounts } = connector;
       const address = accounts[0];
       
       //signMessage(connector);
-    }
+    }*/
 
   };
 
