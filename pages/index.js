@@ -8,9 +8,10 @@ import WalletConnectLogin from './components/WalletConnect';
 
 import { signIn, signOut, useSession } from 'next-auth/client'
 
-export default function Home() {
+export default function Home({infura}) {
   const [session] = useSession();
 
+  
   const handleSignOut = () => {
       
     signOut();
@@ -28,7 +29,7 @@ export default function Home() {
         
         <MetaMask session={session} signIn={signIn}/>
 
-        <WalletConnectLogin session={session} signIn={signIn}/>
+        <WalletConnectLogin session={session} infura={infura} signIn={signIn}/>
 
         {session && <p className={styles.description}> Welcome {session?.user?.name}</p>}
 
@@ -41,4 +42,13 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export async function getStaticProps() {
+  
+  return {
+    props: {
+      infura: process.env.INFURA_ID
+    },
+  }
 }
